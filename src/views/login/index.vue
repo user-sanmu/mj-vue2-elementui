@@ -1,21 +1,95 @@
 <template>
-  <div>
-    我是一级登录
-    <el-row>
-      <el-button plain>朴素按钮</el-button>
-      <el-button type="primary" plain>主要按钮</el-button>
-      <el-button type="success" plain>成功按钮</el-button>
-      <el-button type="info" plain>信息按钮</el-button>
-      <el-button type="warning" plain>警告按钮</el-button>
-      <el-button type="danger" plain>危险按钮</el-button>
-    </el-row>
+  <div class="login-page">
+    <el-card>
+      <template #header>黑马面经后台管理系统</template>
+      <!-- 卡片内容默认插槽,不用嵌套template -->
+      <el-form ref="form" :model="user" :rules="rules" label-width="80px">
+        <!-- 账号 -->
+        <el-form-item label="账号" prop="username">
+          <el-input v-model="user.username"></el-input>
+        </el-form-item>
+        <el-form-item label="密码" prop="password">
+          <el-input v-model="user.password" show-password></el-input>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" round>登录</el-button>
+          <el-button round class="btn">重置</el-button>
+        </el-form-item>
+      </el-form>
+    </el-card>
   </div>
 </template>
 
 <script>
 export default {
-  name: 'login-page'
+  name: 'login-page',
+  data () {
+    return {
+      user: {
+        username: '',
+        password: ''
+      },
+      rules: {
+        username: [
+          // required: 必填
+          // trigge: 验证时机
+          {
+            required: true,
+            message: '请输入账号',
+            trigger: ['blur', 'change']
+          },
+          {
+            min: 4,
+            max: 6,
+            message: '长度在 4 到 6 个字符',
+            trigger: ['blur', 'change']
+          }
+        ],
+        password: [
+          {
+            required: true,
+            message: '请输入密码',
+            trigger: ['blur', 'change']
+          },
+          {
+            min: 5,
+            max: 8,
+            message: '长度在 5 到 8 个字符',
+            trigger: ['blur', 'change']
+          }
+        ]
+      }
+    }
+  }
 }
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.login-page {
+  height: 100vh;
+  background: url(@/assets/login-bg.svg) no-repeat center;
+  background-size: cover;
+  // 使用elementui组件名就是类名
+  .el-card {
+    width: 420px;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    border-radius: 30px;
+    transform: translate(-50%, -50%);
+    // 使用样式穿透
+    ::v-deep .el-card__header {
+      text-align: center;
+      background-color: #727cf5;
+      font-size: 20px;
+      color: #fff;
+      height: 80px;
+      line-height: 40px;
+    }
+    .el-form {
+      padding-right: 60px;
+      text-align: center;
+    }
+  }
+}
+</style>
