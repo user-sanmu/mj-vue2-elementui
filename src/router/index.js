@@ -1,9 +1,6 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 
-// 导入路由组件
-// const Login = path => import('@/views/' + path)
-
 Vue.use(VueRouter)
 
 const routes = [
