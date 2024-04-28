@@ -12,8 +12,8 @@
           <el-input v-model="user.password" show-password></el-input>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" round>登录</el-button>
-          <el-button round class="btn">重置</el-button>
+          <el-button type="primary" round @click="login">登录</el-button>
+          <el-button round class="btn" @click="reset">重置</el-button>
         </el-form-item>
       </el-form>
     </el-card>
@@ -21,6 +21,8 @@
 </template>
 
 <script>
+import { loginApi } from '@/api/user'
+
 export default {
   name: 'login-page',
   data () {
@@ -60,6 +62,29 @@ export default {
         ]
       }
     }
+  },
+  methods: {
+    login () {
+      this.$refs.form.validate(async valid => {
+        if (valid) {
+          try {
+            const res = await loginApi(this.user)
+            // console.log(res)
+            localStorage.setItem('mj-pc-token', res.data.token)
+            this.$message.success('登录成功')
+            setTimeout(() => {
+              this.$router.push('/dashboard')
+            }, 1500)
+          } catch (err) {
+            console.log(err)
+            this.$message.error(err.response.data.message)
+          }
+        }
+      })
+    },
+    reset () {
+      this.$refs.form.resetFields()
+    }
   }
 }
 </script>
@@ -89,6 +114,9 @@ export default {
     .el-form {
       padding-right: 60px;
       text-align: center;
+    }
+    ::v-deep .el-input__inner {
+      border-radius: 20px;
     }
   }
 }
