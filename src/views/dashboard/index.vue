@@ -25,7 +25,7 @@
       </el-col>
       <el-col :span="18">
         <el-card style="height: 504px" shadow="never">
-          <div class="chart-box" style="height: 500px"></div>
+          <div ref="chartBox" class="chart-box" style="height: 500px"></div>
         </el-card>
       </el-col>
       <el-col :span="8">
@@ -51,8 +51,45 @@
 </template>
 
 <script>
+import * as echarts from 'echarts'
 export default {
-  name: 'dashboard-page'
+  name: 'dashboard-page',
+  data () {
+    return {
+      myChart: null
+    }
+  },
+  mounted () {
+    this.myChart = echarts.init(this.$refs.chartBox)
+    console.log(this.$refs.chartBox)
+    const option = {
+      xAxis: {
+        type: 'category',
+        boundaryGap: false,
+        data: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+      },
+      yAxis: {
+        type: 'value'
+      },
+      series: [
+        {
+          data: [820, 932, 901, 934, 1290, 1330, 1320],
+          type: 'line',
+          smooth: true,
+          lineStyle: {
+            color: '#1bd4ae'
+          },
+          itemStyle: {
+            color: '#1bd4ae'
+          },
+          areaStyle: {
+            color: '#5ee0c6'
+          }
+        }
+      ]
+    }
+    this.myChart.setOption(option)
+  }
 }
 </script>
 
