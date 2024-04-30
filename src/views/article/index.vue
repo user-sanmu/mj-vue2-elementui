@@ -8,7 +8,13 @@
       <template #header>
         <div class="header">
           <span>共 {{ total }} 条记录</span>
-          <el-button icon="el-icon-plus" size="small" type="primary" round>
+          <el-button
+            icon="el-icon-plus"
+            size="small"
+            type="primary"
+            round
+            @click="openDrawer('add')"
+          >
             添加面经
           </el-button>
         </div>
@@ -23,8 +29,8 @@
           <el-table-column label="操作" width="120">
             <template #default="{ row }">
               <div class="actions">
-                <i class="el-icon-edit"></i>
-                <i class="el-icon-share"></i>
+                <i class="el-icon-view" @click="openDrawer('view')"></i>
+                <i class="el-icon-edit" @click="openDrawer('edit')"></i>
                 <i class="el-icon-delete" @click="del(row.id)"></i>
               </div>
             </template>
@@ -35,14 +41,23 @@
         @size-change="handleSizeChange"
         @current-change="handleCurrentChange"
         :current-page="currentPage"
-        :page-sizes="[100, 200, 300, 400]"
-        :page-size="100"
+        :page-sizes="[10, 50, 100, 200, 300, 400]"
+        :page-size="10"
         layout="total, sizes, prev, pager, next, jumper"
-        :total="400"
+        :total="total"
         background
       >
       </el-pagination>
     </el-card>
+    <!-- 抽屉 -->
+    <el-drawer
+      :title="drawerTitle"
+      :visible.sync="drawer"
+      :before-close="handleClose"
+      size="50%"
+    >
+      <span>我来啦!</span>
+    </el-drawer>
   </div>
 </template>
 
@@ -57,7 +72,9 @@ export default {
       total: 0,
       current: 1,
       pageSize: 10,
-      currentPage: 1
+      currentPage: 1,
+      drawer: false,
+      drawerType: ''
     }
   },
   created () {
@@ -65,7 +82,10 @@ export default {
   },
   methods: {
     async initData () {
-      const res = await ArticleListApi()
+      const res = await ArticleListApi({
+        current: this.current,
+        pageSize: this.pageSize
+      })
       console.log(res)
       this.tableData = res.data.rows
       this.total = res.data.total
@@ -75,9 +95,36 @@ export default {
     },
     handleSizeChange (val) {
       console.log(`每页 ${val} 条`)
+      this.pageSize = val
+      this.initData()
     },
     handleCurrentChange (val) {
       console.log(`当前页: ${val}`)
+      this.current = val
+      this.initData()
+    },
+    openDrawer (type) {
+      console.log(type)
+      this.drawerType = type
+      this.drawer = true
+    },
+    handleClose (done) {
+      this.$confirm('请确认关闭')
+        .then(_ => {
+          done()
+        })
+        .catch(_ => {})
+    }
+  },
+  computed: {
+    drawerTitle () {
+      if (this.drawerType === 'add') {
+        return '添加面经'
+      } else if (this.drawerType === 'edit') {
+        return '编辑面经'
+      } else {
+        return '面经预览'
+      }
     }
   }
 }
