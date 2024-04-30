@@ -54,7 +54,7 @@ export default {
   },
   async created () {
     const res = await getUserApi()
-    console.log(res)
+    // console.log(res)
     this.avatar = res.data.avatar
     this.username = res.data.username
   },

@@ -51,6 +51,7 @@
 </template>
 
 <script>
+import { getLineDataApi } from '@/api/user'
 import * as echarts from 'echarts'
 export default {
   name: 'dashboard-page',
@@ -59,9 +60,31 @@ export default {
       myChart: null
     }
   },
+  async created () {
+    try {
+      const res = await getLineDataApi()
+      console.log(res)
+      // const xaxisData = res.data.list.map(item => item.ref_date)
+      // console.log(xaxisData)
+      this.myChart.setOption({
+        xAxis: {
+          data: res.data.list.map(item => item.ref_date)
+        },
+        series: [
+          {
+            data: res.data.list.map(item => item.visit_uv)
+          },
+          {
+            data: res.data.list.map(item => item.session_cnt)
+          }
+        ]
+      })
+    } catch (err) {
+      console.log(err)
+    }
+  },
   mounted () {
     this.myChart = echarts.init(this.$refs.chartBox)
-    console.log(this.$refs.chartBox)
     const option = {
       xAxis: {
         type: 'category',
@@ -84,6 +107,20 @@ export default {
           },
           areaStyle: {
             color: '#5ee0c6'
+          }
+        },
+        {
+          data: [260, 710, 320, 530, 490, 610, 450],
+          type: 'line',
+          smooth: true,
+          lineStyle: {
+            color: '#5ab1ef'
+          },
+          itemStyle: {
+            color: '#5ab1ef'
+          },
+          areaStyle: {
+            color: '#5bbfe3'
           }
         }
       ]

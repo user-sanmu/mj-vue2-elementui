@@ -10,3 +10,8 @@ export const loginApi = data => {
 export const getUserApi = () => {
   return requset.get('/auth/currentUser')
 }
+
+// 获取图表数据
+export const getLineDataApi = () => {
+  return requset.get('/analysis/DailyVisitTrend')
+}
