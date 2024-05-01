@@ -56,16 +56,46 @@
       :before-close="handleClose"
       size="50%"
     >
-      <span>我来啦!</span>
+      <el-form label-width="80px" :model="form" :rules="rules" ref="form">
+        <el-form-item label="标题" prop="stem">
+          <el-input v-model="form.stem"></el-input>
+        </el-form-item>
+        <el-form-item label="内容" prop="content">
+          <template>
+            <div style="border: 1px solid #ccc">
+              <Toolbar
+                style="border-bottom: 1px solid #ccc"
+                :editor="editor"
+                :defaultConfig="toolbarConfig"
+                :mode="mode"
+              />
+              <Editor
+                style="height: 500px; overflow-y: hidden"
+                v-model="form.content"
+                :defaultConfig="editorConfig"
+                :mode="mode"
+                @onCreated="onCreated"
+                @onBlur="onBlur"
+              />
+            </div>
+          </template>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="onSubmit">确认</el-button>
+          <el-button>取消</el-button>
+        </el-form-item>
+      </el-form>
     </el-drawer>
   </div>
 </template>
 
 <script>
-import { ArticleListApi } from '@/api/article'
+import { ArticleListApi, addArticleApi, delArticleApi } from '@/api/article'
+import { Editor, Toolbar } from '@wangeditor/editor-for-vue'
 
 export default {
   name: 'article-page',
+  components: { Editor, Toolbar },
   data () {
     return {
       tableData: [],
@@ -74,7 +104,20 @@ export default {
       pageSize: 10,
       currentPage: 1,
       drawer: false,
-      drawerType: ''
+      drawerType: '',
+      form: {
+        stem: '',
+        content: ''
+      },
+      rules: {
+        stem: [{ required: true, message: '标题不能为空', trigger: 'blur' }],
+        content: [{ required: true, message: '内容不能为空', trigger: 'blur' }]
+      },
+      editor: null,
+      html: '',
+      toolbarConfig: {},
+      editorConfig: { placeholder: '请输入内容...' },
+      mode: 'default'
     }
   },
   created () {
@@ -86,34 +129,68 @@ export default {
         current: this.current,
         pageSize: this.pageSize
       })
-      console.log(res)
+      // console.log(res)
       this.tableData = res.data.rows
       this.total = res.data.total
     },
     del (id) {
-      console.log(id)
+      this.$confirm('请确认删除').then(async _ => {
+        await delArticleApi(id)
+        this.initData()
+      })
     },
     handleSizeChange (val) {
-      console.log(`每页 ${val} 条`)
+      // console.log(`每页 ${val} 条`)
       this.pageSize = val
       this.initData()
     },
     handleCurrentChange (val) {
-      console.log(`当前页: ${val}`)
+      // console.log(`当前页: ${val}`)
       this.current = val
       this.initData()
     },
     openDrawer (type) {
-      console.log(type)
+      // console.log(type)
       this.drawerType = type
       this.drawer = true
     },
-    handleClose (done) {
-      this.$confirm('请确认关闭')
-        .then(_ => {
-          done()
-        })
-        .catch(_ => {})
+    handleClose () {
+      this.drawer = false
+    },
+    onSubmit () {
+      this.$refs.form.validate(async valid => {
+        if (valid) {
+          // console.log(this.form)
+          try {
+            await addArticleApi(this.form)
+            this.$refs.form.resetFields()
+            this.handleClose()
+            this.initData()
+            this.$message.success('添加成功')
+          } catch (err) {
+            console.log(err)
+            if (err.response) {
+              this.$message.error(err.response.data.message)
+              console.log(err)
+            } else {
+              this.$message.error('添加失败')
+            }
+          }
+        }
+      })
+    },
+    onBlur () {
+      this.$refs.form.validateField('content')
+      // console.log(this.$refs.form.content)
+      // console.log(111)
+    },
+    onCreated (editor) {
+      this.editor = Object.seal(editor) // 一定要用 Object.seal() ，否则会报错
+    },
+    beforeDestroy () {
+      const editor = this.editor
+      if (editor == null) return
+      editor.destroy() // 组件销毁时，及时销毁编辑器
     }
   },
   computed: {
@@ -130,6 +207,7 @@ export default {
 }
 </script>
 
+<style src="@wangeditor/editor/dist/css/style.css"></style>
 <style lang="scss" scoped>
 .el-card {
   margin-top: 25px;
