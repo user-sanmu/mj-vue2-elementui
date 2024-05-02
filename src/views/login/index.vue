@@ -70,7 +70,8 @@ export default {
           try {
             const res = await loginApi(this.user)
             // console.log(res)
-            localStorage.setItem('mj-pc-token', res.data.token)
+            // localStorage.setItem('mj-pc-token', res.data.token)
+            this.$store.commit('user/updateToken', res.data.token)
             this.$message.success('登录成功')
             setTimeout(() => {
               this.$router.push('/dashboard')
