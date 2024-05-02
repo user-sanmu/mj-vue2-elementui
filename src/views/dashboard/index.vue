@@ -63,7 +63,7 @@ export default {
   async created () {
     try {
       const res = await getLineDataApi()
-      console.log(res)
+      // console.log(res)
       // const xaxisData = res.data.list.map(item => item.ref_date)
       // console.log(xaxisData)
       this.myChart.setOption({

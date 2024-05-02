@@ -29,8 +29,8 @@
           <el-table-column label="操作" width="120">
             <template #default="{ row }">
               <div class="actions">
-                <i class="el-icon-view" @click="openDrawer('view')"></i>
-                <i class="el-icon-edit" @click="openDrawer('edit')"></i>
+                <i class="el-icon-view" @click="openDrawer('view', row.id)"></i>
+                <i class="el-icon-edit" @click="openDrawer('edit', row.id)"></i>
                 <i class="el-icon-delete" @click="del(row.id)"></i>
               </div>
             </template>
@@ -56,7 +56,13 @@
       :before-close="handleClose"
       size="50%"
     >
-      <el-form label-width="80px" :model="form" :rules="rules" ref="form">
+      <el-form
+        v-if="drawerType !== 'view'"
+        label-width="80px"
+        :model="form"
+        :rules="rules"
+        ref="form"
+      >
         <el-form-item label="标题" prop="stem">
           <el-input v-model="form.stem"></el-input>
         </el-form-item>
@@ -85,12 +91,22 @@
           <el-button>取消</el-button>
         </el-form-item>
       </el-form>
+      <div v-else class="article-preview">
+        <h5>{{ form.stem }}</h5>
+        <div v-html="form.content"></div>
+      </div>
     </el-drawer>
   </div>
 </template>
 
 <script>
-import { ArticleListApi, addArticleApi, delArticleApi } from '@/api/article'
+import {
+  ArticleListApi,
+  addArticleApi,
+  delArticleApi,
+  getArticleApi,
+  updateArticleApi
+} from '@/api/article'
 import { Editor, Toolbar } from '@wangeditor/editor-for-vue'
 
 export default {
@@ -137,6 +153,7 @@ export default {
       this.$confirm('请确认删除').then(async _ => {
         await delArticleApi(id)
         this.initData()
+        delete this.form.id
       })
     },
     handleSizeChange (val) {
@@ -149,31 +166,63 @@ export default {
       this.current = val
       this.initData()
     },
-    openDrawer (type) {
+    async openDrawer (type, id) {
       // console.log(type)
       this.drawerType = type
+      if (type !== 'add') {
+        const res = await getArticleApi(id)
+        console.log(res)
+        this.form.content = res.data.content
+        this.form.stem = res.data.stem
+        this.form.id = res.data.id
+      }
       this.drawer = true
     },
     handleClose () {
       this.drawer = false
+      this.$refs.form?.resetFields()
+      this.form = {
+        stem: '',
+        content: ''
+      }
     },
     onSubmit () {
       this.$refs.form.validate(async valid => {
         if (valid) {
           // console.log(this.form)
-          try {
-            await addArticleApi(this.form)
-            this.$refs.form.resetFields()
-            this.handleClose()
-            this.initData()
-            this.$message.success('添加成功')
-          } catch (err) {
-            console.log(err)
-            if (err.response) {
-              this.$message.error(err.response.data.message)
-              console.log(err)
-            } else {
-              this.$message.error('添加失败')
+          // 添加
+          if (this.drawerType === 'add') {
+            try {
+              await addArticleApi(this.form)
+              this.$refs.form.resetFields()
+              this.handleClose()
+              this.initData()
+              this.$message.success('添加成功')
+            } catch (err) {
+              // console.log(err)
+              if (err.response) {
+                this.$message.error(err.response.data.message)
+                console.log(err)
+              } else {
+                this.$message.error('添加失败')
+              }
+            }
+          } else {
+            // 修改
+            try {
+              await updateArticleApi({ ...this.form })
+              this.$refs.form.resetFields()
+              this.handleClose()
+              this.initData()
+              this.$message.success('修改成功')
+            } catch (err) {
+              // console.log(err)
+              if (err.response) {
+                this.$message.error(err.response.data.message)
+                console.log(err)
+              } else {
+                this.$message.error('修改失败失败')
+              }
             }
           }
         }

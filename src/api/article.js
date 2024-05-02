@@ -15,3 +15,11 @@ export const delArticleApi = id => {
     data: { id }
   })
 }
+
+export const getArticleApi = id => {
+  return requset.get('/h5/interview/show', { params: { id } })
+}
+
+export const updateArticleApi = data => {
+  return requset.put('/admin/interview/update', data)
+}
